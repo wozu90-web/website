@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1480, initial-scale=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="icon" type="image/x-icon" href="./tab-icon.ico">
+    <title>Баллы ЕГЭ</title>
+    <style>
+        /* Дополнительные стили для страницы баллов */
+        .ball-page {
+            background: #f5f3ef !important;
+            padding: 40px 20px !important;
+            min-height: auto !important;
+        }
+        
+        .ball-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .ball-title {
+            font-family: "Inter", sans-serif;
+            font-size: 48px;
+            font-weight: 400;
+            text-align: center;
+            margin: 0 0 20px 0;
+            color: #1a1a1a;
+        }
+        
+        .ball-subtitle {
+            font-family: "Inter", sans-serif;
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 40px;
+            color: #666;
+        }
+        
+        /* Выпадающий список */
+        .subject-selector {
+            margin-bottom: 40px;
+        }
+        
+        .subject-select {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            display: block;
+            padding: 15px 25px;
+            font-family: "Inter", sans-serif;
+            font-size: 18px;
+            border: 2px solid #2ac6ff;
+            border-radius: 50px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232ac6ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 20px;
+        }
+        
+        .subject-select:hover {
+            border-color: #1ca8db;
+            box-shadow: 0 5px 15px rgba(42, 198, 255, 0.2);
+        }
+        
+        .subject-select:focus {
+            outline: none;
+            border-color: #1ca8db;
+            box-shadow: 0 0 0 3px rgba(42, 198, 255, 0.3);
+        }
+        
+        /* Таблица */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 20px;
+            border: 1px solid #e0e0e0;
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .table-container.active {
+            display: block;
+        }
+        
+        .score-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: "Inter", sans-serif;
+        }
+        
+        .score-table th {
+            background: #2ac6ff;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .score-table td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 16px;
+        }
+        
+        .score-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .score-table tbody tr:hover {
+            background: #f5f5f5;
+        }
+        
+        .score-table .primary-score {
+            font-weight: 600;
+            color: #2b16e8;
+        }
+        
+        .score-table .secondary-score {
+            font-weight: 600;
+            color: #e97a2b;
+        }
+        
+        /* Информация о предмете */
+        .subject-info {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f8f8;
+            border-radius: 20px;
+            display: none;
+        }
+        
+        .subject-info.active {
+            display: block;
+        }
+        
+        .subject-info h3 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1a1a1a;
+        }
+        
+        .subject-info p {
+            font-size: 16px;
+            color: #666;
+        }
+        
+        .max-score {
+            color: #2ac6ff;
+            font-weight: 600;
+            font-size: 20px;
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .ball-container {
+                padding: 20px;
+            }
+            
+            .ball-title {
+                font-size: 36px;
+            }
+            
+            .score-table th {
+                font-size: 16px;
+                padding: 10px;
+            }
+            
+            .score-table td {
+                font-size: 14px;
+                padding: 8px 10px;
+            }
+            
+            .subject-select {
+                font-size: 16px;
+                padding: 12px 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .ball-title {
+                font-size: 28px;
+            }
+            
+            .ball-subtitle {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <header class="head" style="min-height: auto; height: auto; background: #f3ebd8;">
+            <nav class="search_1">
+                <div class="logo">
+                    <img src="./tab-icon.ico" alt="Логотип" width="50" height="50">
+                </div>
+                <div><a href="index.html">Главная</a></div>
+                <div><a href="materials.html">Все материалы</a></div>
+                <div><a href="ball.html">Баллы</a></div>
+            </nav>
+        </header>
+
+        <main class="main ball-page">
+            <div class="ball-container">
+                <h1 class="ball-title">Калькулятор баллов ЕГЭ</h1>
+                <p class="ball-subtitle">Выберите предмет, чтобы увидеть таблицу перевода первичных баллов во вторичные</p>
+                
+                <div class="subject-selector">
+                    <select id="subjectSelect" class="subject-select">
+                        <option value="">Выберите предмет</option>
+                        <option value="rus">Русский язык</option>
+                        <option value="mathb">Математика (база)</option>
+                        <option value="mathp">Математика (профиль)</option>
+                        <option value="fiz">Физика</option>
+                        <option value="him">Химия</option>
+                        <option value="inf">Информатика</option>
+                        <option value="bio">Биология</option>
+                        <option value="ist">История</option>
+                        <option value="obs">Обществознание</option>
+                        <option value="geo">География</option>
+                        <option value="eng">Английский язык</option>
+                        <option value="lit">Литература</option>
+                    </select>
+                </div>
+
+                <!-- Информация о предметах (будет показываться при выборе) -->
+                <div id="rus-info" class="subject-info">
+                    <h3>Русский язык</h3>
+                    <p>Максимальный первичный балл: <span class="max-score">50</span></p>
+                    <p>Минимальный первичный для получения аттистата: 10</p>
+                </div>
+                
+                <div id="mathb-info" class="subject-info">
+                    <h3>Математика (база)</h3>
+                    <p>Оценивается по 5-балльной шкале</p>
+                    <p>Минимальный первичный для получения аттистата: <span class="max-score">21</span></p>
+                </div>
+                
+                <div id="mathp-info" class="subject-info">
+                    <h3>Математика (профиль)</h3>
+                    <p>Максимальный первичный балл: <span class="max-score">32</span></p>
+                    <p>Минимальный первичный для получения аттистата: 5</p>
+                </div>
+                
+                <div id="fiz-info" class="subject-info">
+                    <h3>Физика</h3>
+                    <p>Максимальный первичный балл: <span class="max-score">45</span></p>
+                    <p>Минимальный первичный для получения аттистата: 8</p>
+                </div>
+                
+                <div id="him-info" class="subject-info">
+                    <h3>Химия</h3>
+                    <p>Максимальный первичный балл: <span class="max-score">56</span></p>
+                    <p>Минимальный первичный для получения аттистата: 11</p>
+                </div>
+                
+                <div id="inf-info" class="subject-info">
+                    <h3>Информатика</h3>
+                    <p>Максимальный первичный балл: <span class="max-score">29</span></p>
+                    <p>Минимальный первичный для получения аттистата: 6</p>
+                </div>
+                
+                <div id="bio-info" class="subject-info">
+                    <h3>Биология</h3>
+                    <p>Максимальный первичный балл: <span class="max-score">57</span></p>
+                    <p>Минимальный первичный для получения аттистата: 15</p>
+                </div>
+                
+                <div id="ist-info" class="subject-info">
+                    <h3>История</h3>
+                    <p>Максимальный первичный балл: <span class="max-score">42</span></p>
+                    <p>Минимальный первичный для получения аттистата: 8</p>
+                </div>
+                
+                <div id="obs-info" class="subject-info">
+                    <h3>Обществознание</h3>
+                    <p>Максимальный первичный балл: <span class="max-score">58</span></p>
+                    <p>Минимальный первичный для получения аттистата: 21</p>
+                </div>
+                
+                <div id="geo-info" class="subject-info">
+                    <h3>География</h3>
+                    <p>Максимальный первичный балл: <span class="max-score">38</span></p>
+                    <p>Минимальный первичный для получения аттистата: 9</p>
+                </div>
+                
+                <div id="eng-info" class="subject-info">
+                    <h3>Английский язык</h3>
+                    <p>Максимальный первичный балл: <span class="max-score">82</span></p>
+                    <p>Минимальный первичный для получения аттистата: 18</p>
+                </div>
+                
+                <div id="lit-info" class="subject-info">
+                    <h3>Литература</h3>
+                    <p>Максимальный первичный балл: <span class="max-score">48</span></p>
+                    <p>Минимальный первичный для получения аттистата: 13</p>
+                </div>
+
+                <!-- Таблицы перевода баллов -->
+                <div id="rus-table" class="table-container">
+                    <table class="score-table">
+                        <thead>
+                            <tr>
+                                <th>Первичный балл</th>
+                                <th>Тестовый балл</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="primary-score">0-9</td><td class="secondary-score">0-22</td></tr>
+                            <tr><td class="primary-score">10-19</td><td class="secondary-score">24-42</td></tr>
+                            <tr><td class="primary-score">21-27</td><td class="secondary-score">43-54</td></tr>
+                            <tr><td class="primary-score">28-40</td><td class="secondary-score">55-73</td></tr>
+                            <tr><td class="primary-score">41-45</td><td class="secondary-score">75-86</td></tr>
+                            <tr><td class="primary-score">46-50</td><td class="secondary-score">89-100</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="mathb-table" class="table-container">
+                    <table class="score-table">
+                        <thead>
+                            <tr>
+                                <th>Первичный балл</th>
+                                <th>Оценка</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="primary-score">0-6</td><td class="secondary-score">2</td></tr>
+                            <tr><td class="primary-score">7-11</td><td class="secondary-score">3</td></tr>
+                            <tr><td class="primary-score">12-16</td><td class="secondary-score">4</td></tr>
+                            <tr><td class="primary-score">17-21</td><td class="secondary-score">5</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="mathp-table" class="table-container">
+                    <table class="score-table">
+                        <thead>
+                            <tr>
+                                <th>Первичный балл</th>
+                                <th>Тестовый балл</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="primary-score">0-5</td><td class="secondary-score">0-27</td></tr>
+                            <tr><td class="primary-score">6-12</td><td class="secondary-score">34-70</td></tr>
+                            <tr><td class="primary-score">13-18</td><td class="secondary-score">72-82</td></tr>
+                            <tr><td class="primary-score">19-24</td><td class="secondary-score">84-94</td></tr>
+                            <tr><td class="primary-score">25-32</td><td class="secondary-score">95-100</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="fiz-table" class="table-container">
+                    <table class="score-table">
+                        <thead>
+                            <tr>
+                                <th>Первичный балл</th>
+                                <th>Тестовый балл</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="primary-score">0-10</td><td class="secondary-score">0-33</td></tr>
+                            <tr><td class="primary-score">11-20</td><td class="secondary-score">34-44</td></tr>
+                            <tr><td class="primary-score">21-30</td><td class="secondary-score">45-55</td></tr>
+                            <tr><td class="primary-score">31-40</td><td class="secondary-score">56-66</td></tr>
+                            <tr><td class="primary-score">41-50</td><td class="secondary-score">67-82</td></tr>
+                            <tr><td class="primary-score">51-54</td><td class="secondary-score">83-100</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="him-table" class="table-container">
+                    <table class="score-table">
+                        <thead>
+                            <tr>
+                                <th>Первичный балл</th>
+                                <th>Тестовый балл</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="primary-score">0-10</td><td class="secondary-score">0-33</td></tr>
+                            <tr><td class="primary-score">11-20</td><td class="secondary-score">36-48</td></tr>
+                            <tr><td class="primary-score">21-30</td><td class="secondary-score">49-61</td></tr>
+                            <tr><td class="primary-score">31-40</td><td class="secondary-score">62-74</td></tr>
+                            <tr><td class="primary-score">41-50</td><td class="secondary-score">75-90</td></tr>
+                            <tr><td class="primary-score">51-56</td><td class="secondary-score">91-100</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="inf-table" class="table-container">
+                    <table class="score-table">
+                        <thead>
+                            <tr>
+                                <th>Первичный балл</th>
+                                <th>Тестовый балл</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="primary-score">0-5</td><td class="secondary-score">0-34</td></tr>
+                            <tr><td class="primary-score">6-10</td><td class="secondary-score">40-51</td></tr>
+                            <tr><td class="primary-score">11-15</td><td class="secondary-score">54-64</td></tr>
+                            <tr><td class="primary-score">16-20</td><td class="secondary-score">67-78</td></tr>
+                            <tr><td class="primary-score">21-25</td><td class="secondary-score">80-90</td></tr>
+                            <tr><td class="primary-score">26-29</td><td class="secondary-score">93-100</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="bio-table" class="table-container">
+                    <table class="score-table">
+                        <thead>
+                            <tr>
+                                <th>Первичный балл</th>
+                                <th>Тестовый балл</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="primary-score">0-14</td><td class="secondary-score">0-33</td></tr>
+                            <tr><td class="primary-score">15-24</td><td class="secondary-score">36-51</td></tr>
+                            <tr><td class="primary-score">25-36</td><td class="secondary-score">53-71</td></tr>
+                            <tr><td class="primary-score">37-48</td><td class="secondary-score">72-85</td></tr>
+                            <tr><td class="primary-score">49-57</td><td class="secondary-score">86-100</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="ist-table" class="table-container">
+                    <table class="score-table">
+                        <thead>
+                            <tr>
+                                <th>Первичный балл</th>
+                                <th>Тестовый балл</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="primary-score">0-7</td><td class="secondary-score">0-28</td></tr>
+                            <tr><td class="primary-score">8-14</td><td class="secondary-score">32-44</td></tr>
+                            <tr><td class="primary-score">15-21</td><td class="secondary-score">45-57</td></tr>
+                            <tr><td class="primary-score">22-28</td><td class="secondary-score">58-70</td></tr>
+                            <tr><td class="primary-score">29-35</td><td class="secondary-score">72-84</td></tr>
+                            <tr><td class="primary-score">36-42</td><td class="secondary-score">87-100</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="obs-table" class="table-container">
+                    <table class="score-table">
+                        <thead>
+                            <tr>
+                                <th>Первичный балл</th>
+                                <th>Тестовый балл</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="primary-score">0-14</td><td class="secondary-score">0-28</td></tr>
+                            <tr><td class="primary-score">15-24</td><td class="secondary-score">30-47</td></tr>
+                            <tr><td class="primary-score">25-34</td><td class="secondary-score">48-60</td></tr>
+                            <tr><td class="primary-score">35-44</td><td class="secondary-score">62-73</td></tr>
+                            <tr><td class="primary-score">45-54</td><td class="secondary-score">75-92</td></tr>
+                            <tr><td class="primary-score">55-58</td><td class="secondary-score">94-100</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="geo-table" class="table-container">
+                    <table class="score-table">
+                        <thead>
+                            <tr>
+                                <th>Первичный балл</th>
+                                <th>Тестовый балл</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="primary-score">0-9</td><td class="secondary-score">0-37</td></tr>
+                            <tr><td class="primary-score">10-18</td><td class="secondary-score">39-49</td></tr>
+                            <tr><td class="primary-score">19-27</td><td class="secondary-score">51-62</td></tr>
+                            <tr><td class="primary-score">28-36</td><td class="secondary-score">63-90</td></tr>
+                            <tr><td class="primary-score">37-38</td><td class="secondary-score">95-100</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="eng-table" class="table-container">
+                    <table class="score-table">
+                        <thead>
+                            <tr>
+                                <th>Первичный балл</th>
+                                <th>Тестовый балл</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="primary-score">0-17</td><td class="secondary-score">0-21</td></tr>
+                            <tr><td class="primary-score">18-30</td><td class="secondary-score">22-36</td></tr>
+                            <tr><td class="primary-score">31-42</td><td class="secondary-score">37-49</td></tr>
+                            <tr><td class="primary-score">43-54</td><td class="secondary-score">50-62</td></tr>
+                            <tr><td class="primary-score">55-66</td><td class="secondary-score">63-75</td></tr>
+                            <tr><td class="primary-score">67-78</td><td class="secondary-score">76-92</td></tr>
+                            <tr><td class="primary-score">79-82</td><td class="secondary-score">94-100</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="lit-table" class="table-container">
+                    <table class="score-table">
+                        <thead>
+                            <tr>
+                                <th>Первичный балл</th>
+                                <th>Тестовый балл</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td class="primary-score">0-12</td><td class="secondary-score">0-30</td></tr>
+                            <tr><td class="primary-score">13-18</td><td class="secondary-score">32-38</td></tr>
+                            <tr><td class="primary-score">19-27</td><td class="secondary-score">39-47</td></tr>
+                            <tr><td class="primary-score">28-36</td><td class="secondary-score">49-57</td></tr>
+                            <tr><td class="primary-score">37-45</td><td class="secondary-score">58-84</td></tr>
+                            <tr><td class="primary-score">46-48</td><td class="secondary-score">89-100</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div class="footer__col">
+                <h3>О проекте</h3>
+                <p>Образовательная платформа для подготовки к ЕГЭ.</p>
+            </div>
+            <div class="footer__col">
+                <h3>Разделы</h3>
+                <ul class="footer__list">
+                    <li><a href="index.html">Главная</a></li>
+                    <li><a href="materials.html">Все материалы</a></li>
+                    <li><a href="ball.html">Баллы</a></li>
+                </ul>
+            </div>
+            <div class="footer__col">
+                <h3>Контакты</h3>
+                <p>Email: info@example.com</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Скрипт для показа таблицы выбранного предмета
+        document.getElementById('subjectSelect').addEventListener('change', function() {
+            // Скрываем все таблицы и информацию
+            const tables = document.querySelectorAll('.table-container');
+            const infos = document.querySelectorAll('.subject-info');
+            
+            tables.forEach(table => {
+                table.classList.remove('active');
+            });
+            
+            infos.forEach(info => {
+                info.classList.remove('active');
+            });
+            
+            // Показываем выбранный предмет
+            const selectedValue = this.value;
+            
+            if (selectedValue) {
+                const selectedTable = document.getElementById(selectedValue + '-table');
+                const selectedInfo = document.getElementById(selectedValue + '-info');
+                
+                if (selectedTable) {
+                    selectedTable.classList.add('active');
+                }
+                
+                if (selectedInfo) {
+                    selectedInfo.classList.add('active');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
